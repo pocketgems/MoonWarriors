@@ -1,15 +1,16 @@
-var SettingsLayer = cc.Layer.extend({
-    init:function () {
+var SettingsLayer = function(){
+    this._layer = new cc.Layer();
+    this.init = function () {
         var bRet = false;
-        if (this._super()) {
+        if (this._layer.init()) {
             var sp = cc.Sprite.create(s_loading);
             sp.setAnchorPoint(cc.PointZero());
-            this.addChild(sp, 0, 1);
+            this._layer.addChild(sp, 0, 1);
 
             var cacheImage = cc.TextureCache.sharedTextureCache().addImage(s_menuTitle)
             var title = cc.Sprite.createWithTexture(cacheImage, cc.RectMake(0, 0, 134, 34));
             title.setPosition(cc.ccp(winSize.width / 2, winSize.height - 120));
-            this.addChild(title);
+            this._layer.addChild(title);
 
             cc.MenuItemFont.setFontName("Arial");
             cc.MenuItemFont.setFontSize(18);
@@ -42,7 +43,7 @@ var SettingsLayer = cc.Layer.extend({
 
             var menu = cc.Menu.create(title1, title2, item1, item2, back);
             menu.alignItemsInColumns(2, 2, 1);
-            this.addChild(menu);
+            this._layer.addChild(menu);
 
             var cp_back = back.getPosition();
             cp_back.y -= 50.0;
@@ -52,26 +53,26 @@ var SettingsLayer = cc.Layer.extend({
         }
 
         return bRet;
-    },
-    backCallback:function (pSender) {
+    };
+    this.backCallback = function (pSender) {
         var scene = cc.Scene.create();
         scene.addChild(SysMenu.create());
         cc.Director.sharedDirector().replaceScene(cc.TransitionFade.create(1.2, scene));
-    },
-    soundControl:function(){
+    };
+    this.soundControl = function(){
         global.sound = global.sound ? false : true;
         if(!global.sound){
             cc.AudioManager.sharedEngine().end();
         }
-    },
-    modeControl:function(){
+    };
+    this.modeControl = function(){
     }
-});
+};
 
 SettingsLayer.create = function () {
     var sg = new SettingsLayer();
     if (sg && sg.init()) {
-        return sg;
+        return sg._layer;
     }
     return null;
 };

@@ -1,31 +1,23 @@
 //bullet
-var Bullet = additiveSprite.extend({
-    active:true,
-    xVolocity:0,
-    yVolocity:200,
-    power:1,
-    HP:1,
-    moveType:null,
-    zOrder:3000,
-    attackMode:global.AttackMode.Normal,
-    parentType:global.bulletType.Ship,
-    ctor:function (bulletSpeed, weaponType, attackMode) {
+var Bullet = function(bulletSpeed, weaponType, attackMode) {
+    this.bullet = new cc.Sprite();
+    this.active = true;
+    this.xVolocity = 0;
+    this.yVolocity = 200;
+    this.power = 1;
+    this.HP = 1;
+    this.moveType = null;
+    this.zOrder = 3000;
+    this.attackMode = global.AttackMode.Normal;
+    this.parentType = global.bulletType.Ship;
+    this.ctor = function (bulletSpeed, weaponType, attackMode) {
         this.yVolocity = -bulletSpeed;
         this.attackMode = attackMode;
         cc.SpriteFrameCache.sharedSpriteFrameCache().addSpriteFramesWithFile(s_bullet_plist);
-        this.initWithSpriteFrameName(weaponType);
-        /*var tmpAction;
-         switch (this.attackMode) {
-         case global.AttackMode.Normal:
-         tmpAction = cc.MoveBy.create(2, cc.ccp(this.getPosition().x, 400));
-         break;
-         case global.AttackMode.Tsuihikidan:
-         tmpAction = cc.MoveTo.create(2, GameLayer.create()._ship.getPosition());
-         break;
-         }
-         this.runAction(tmpAction);*/
-    },
-    update:function (dt) {
+        this.bullet.initWithSpriteFrameName(weaponType);
+        this.bullet.setBlendFunc(new cc.BlendFunc(cc.GL_SRC_ALPHA,cc.GL_ONE));
+    };
+    this.update = function (dt) {
         var newX = this.getPositionX(), newY = this.getPositionY();
         newX -= this.xVolocity * dt;
         newY -= this.yVolocity * dt;
@@ -33,8 +25,8 @@ var Bullet = additiveSprite.extend({
         if (this.HP <= 0) {
             this.active = false;
         }
-    },
-    destroy:function () {
+    };
+    this.destroy = function () {
         var explode = new additiveSprite();
         explode.initWithFile(s_hit);
         explode.setPosition(this.getPosition());
@@ -47,13 +39,15 @@ var Bullet = additiveSprite.extend({
         var removeExplode = cc.CallFunc.create(explode,explode.removeFromParentAndCleanup);
         explode.runAction(cc.ScaleBy.create(0.3, 2,2));
         explode.runAction(cc.Sequence.create(cc.FadeOut.create(0.3), removeExplode))
-    },
-    hurt:function () {
+    };
+    this.hurt = function () {
         this.HP--;
-    },
-    collideRect:function(){
-        var a = this.getContentSize();
-        var r = new cc.RectMake(this.getPositionX() - 3,this.getPositionY() - 3,6,6);
+    };
+    this.collideRect = function(){
+        var a = this.bullet.getContentSize();
+        var r = new cc.RectMake(this.bullet.getPositionX() - 3,this.bullet.getPositionY() - 3,6,6);
         return r;
     }
-});
+
+    this.ctor(bulletSpeed, weaponType, attackMode);
+};

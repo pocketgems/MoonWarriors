@@ -80,13 +80,13 @@ var Ship = cc.Sprite.extend({
         var offset = 13;
         var a = new Bullet(this.bulletSpeed, "W1.png", global.AttackMode.Normal);
         global.sbulletContainer.push(a);
-        this.getParent().addChild(a, a.zOrder, global.Tag.ShipBullet);
-        a.setPosition(cc.ccp(this.getPosition().x + offset, this.getPosition().y + 3 + this.getContentSize().height * 0.3));
+        this.getParent().addChild(a.bullet, a.zOrder, global.Tag.ShipBullet);
+        a.bullet.setPosition(cc.ccp(this.getPosition().x + offset, this.getPosition().y + 3 + this.getContentSize().height * 0.3));
 
         var b = new Bullet(this.bulletSpeed, "W1.png", global.AttackMode.Normal);
         global.sbulletContainer.push(b);
-        this.getParent().addChild(b, b.zOrder, global.Tag.ShipBullet);
-        b.setPosition(cc.ccp(this.getPosition().x - offset, this.getPosition().y + 3 + this.getContentSize().height * 0.3));
+        this.getParent().addChild(b.bullet, b.zOrder, global.Tag.ShipBullet);
+        b.bullet.setPosition(cc.ccp(this.getPosition().x - offset, this.getPosition().y + 3 + this.getContentSize().height * 0.3));
     },
     destroy:function () {
         global.life--;
