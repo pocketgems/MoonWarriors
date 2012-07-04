@@ -1,27 +1,29 @@
-var Enemy = cc.Sprite.extend({
-    eID:0,
-    active:true,
-    speed:200,
-    bulletSpeed:-200,
-    HP:15,
-    bulletPowerValue:1,
-    moveType:null,
-    scoreValue:200,
-    zOrder:1000,
-    delayTime:1 + 1.2 * Math.random(),
-    attackMode:global.AttackMode.Normal,
-    _hurtColorLife:0,
-    ctor:function (arg) {
+var Enemy = function (arg) {
+    this.model = null;
+    this.eID = 0;
+    this.active = true;
+    this.speed = 200;
+    this.bulletSpeed = -200;
+    this.HP = 15;
+    this.bulletPowerValue = 1;
+    this.moveType = null;
+    this.scoreValue = 200;
+    this.zOrder = 1000;
+    this.delayTime = 1 + 1.2 * Math.random();
+    this.attackMode = global.AttackMode.Normal;
+    this._hurtColorLife = 0;
+    this.ctor = function (arg) {
         this.HP = arg.HP;
         this.moveType = arg.moveType;
         this.scoreValue = arg.scoreValue;
         this.attackMode = arg.attackMode;
 
-        this.initWithSpriteFrameName(arg.textureName);
-        this.schedule(this.shoot, this.delayTime)
-    },
-    _timeTick:0,
-    update:function (dt) {
+        var pFrame = cc.SpriteFrameCache.sharedSpriteFrameCache().spriteFrameByName(arg.textureName);
+        this.model = cc.Sprite.createWithSpriteFrame(pFrame);
+        cc.Scheduler.sharedScheduler().scheduleSelector(this.shoot, this, this.delayTime, false);
+    };
+    this._timeTick = 0;
+    this.update = function (dt) {
         if (this.HP <= 0) {
             this.active = false;
         }
@@ -32,40 +34,45 @@ var Enemy = cc.Sprite.extend({
                 this._hurtColorLife--;
             }
             if (this._hurtColorLife == 1) {
-                this.setColor(new cc.Color3B(255, 255, 255));
+                this.model.setColor(new cc.Color3B(255, 255, 255));
             }
         }
-    },
-    destroy:function () {
+    };
+    this.destroy = function () {
         global.score += this.scoreValue;
         var a = new Explosion();
-        a.setPosition(this.getPosition());
-        this.getParent().addChild(a);
-        spark(this.getPosition(),this.getParent(), 1.2, 0.7);
-        cc.ArrayRemoveObject(global.enemyContainer,this);
-        this.getParent().removeChild(this);
-        if(global.sound){
+        a.model.setPosition(this.model.getPosition());
+        this.model.getParent().addChild(a.model);
+        spark(this.model.getPosition(), this.model.getParent(), 1.2, 0.7);
+        cc.ArrayRemoveObject(global.enemyContainer, this);
+        this.model.getParent().removeChild(this.model);
+        if (global.sound) {
             cc.AudioManager.sharedEngine().playEffect(s_explodeEffect);
         }
-    },
-    shoot:function () {
+        cc.Scheduler.sharedScheduler().unscheduleAllSelectorsForTarget(this);
+    };
+    this.shoot = function () {
+        if(this.model.getParent()){
         var b = new Bullet(this.bulletSpeed, "W2.png", this.attackMode);
         global.ebulletContainer.push(b);
-        this.getParent().addChild(b, b.zOrder, global.Tag.EnemyBullet);
-        b.setPosition(cc.ccp(this.getPosition().x, this.getPosition().y - this.getContentSize().height * 0.2));
-    },
-    hurt:function () {
+       // console.log(this.model.getParent())
+        this.model.getParent().addChild(b.model, b.zOrder, global.Tag.EnemyBullet);
+        b.model.setPosition(cc.ccp(this.model.getPosition().x, this.model.getPosition().y - this.model.getContentSize().height * 0.2));
+        }
+    };
+    this.hurt = function () {
         this._hurtColorLife = 2;
         this.HP--;
-        this.setColor(cc.RED());
-    },
-    collideRect:function(){
-        var a = this.getContentSize();
-        var r = new cc.RectMake(this.getPositionX() - a.width/2,this.getPositionY() - a.height/4,a.width,a.height/2);
+        this.model.setColor(cc.RED());
+    };
+    this.collideRect = function () {
+        var a = this.model.getContentSize();
+        var r = new cc.RectMake(this.model.getPositionX() - a.width / 2, this.model.getPositionY() - a.height / 4, a.width, a.height / 2);
         return r;
     }
-});
+    this.ctor(arg);
+};
 
-Enemy.sharedEnemy = function(){
+Enemy.sharedEnemy = function () {
     cc.SpriteFrameCache.sharedSpriteFrameCache().addSpriteFramesWithFile(s_Enemy_plist, s_Enemy);
 };

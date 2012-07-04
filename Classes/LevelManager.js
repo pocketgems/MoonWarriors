@@ -46,16 +46,16 @@ var LevelManager = function (gamedata) {
 
     this.addEnemyToGameLayer = function (enemyType) {
         var addEnemy = new Enemy(EnemyType[enemyType]);
-        addEnemy.setPosition(cc.ccp(80 + (winSize.width - 160) * Math.random(), winSize.height));
+        addEnemy.model.setPosition(cc.ccp(80 + (winSize.width - 160) * Math.random(), winSize.height));
 
         var offset, tmpAction;
         switch (addEnemy.moveType) {
             case global.moveType.Attack:
-                offset = gamedata._ship.getPosition();
+                offset = gamedata._ship.model.getPosition();
                 tmpAction = cc.MoveTo.create(1, offset);
                 break;
             case global.moveType.Vertical:
-                offset = cc.ccp(0, -winSize.height - addEnemy.getContentSize().height);
+                offset = cc.ccp(0, -winSize.height - addEnemy.model.getContentSize().height);
                 tmpAction = cc.MoveBy.create(4, offset);
                 break;
             case global.moveType.Horizontal:
@@ -72,16 +72,16 @@ var LevelManager = function (gamedata) {
                 tmpAction = cc.Sequence.create(a0, a1, onComplete);
                 break;
             case global.moveType.Overlap:
-                var newX = (addEnemy.getPosition().x <= winSize.width / 2) ? 320 : -320;
+                var newX = (addEnemy.model.getPosition().x <= winSize.width / 2) ? 320 : -320;
                 var a0 = cc.MoveBy.create(4, cc.ccp(newX, -240));
                 var a1 = cc.MoveBy.create(4, cc.ccp(-newX, -320));
                 tmpAction = cc.Sequence.create(a0, a1);
                 break;
         }
 
-        this._gameLayer.addChild(addEnemy, addEnemy.zOrder, global.Tag.Enemy);
+        this._gameLayer.addChild(addEnemy.model, addEnemy.zOrder, global.Tag.Enemy);
         global.enemyContainer.push(addEnemy);
-        addEnemy.runAction(tmpAction);
+        addEnemy.model.runAction(tmpAction);
     }
 
     //init

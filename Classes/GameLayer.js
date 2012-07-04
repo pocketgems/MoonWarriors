@@ -1,5 +1,6 @@
-var GameLayer = function(){
-    this._layer = new cc.Layer();
+var screenRect = null;
+var GameLayer = function () {
+    this._layer = cc.Layer.create();
     this._time = null;
     this._ship = null;
     this._backSky = null;
@@ -13,7 +14,6 @@ var GameLayer = function(){
     this._isBackSkyReload = false;
     this._isBackTileReload = false;
     this.lbScore = null;
-    this.screenRect = null;
     this.isMouseDown = false;
     this._beginPos = cc.PointZero();
     this.init = function () {
@@ -26,7 +26,7 @@ var GameLayer = function(){
             winSize = cc.Director.sharedDirector().getWinSize();
             this._levelManager = new LevelManager(this);
             this.initBackground();
-            this.screenRect = new cc.Rect(0, 0, winSize.width, winSize.height + 10);
+            screenRect = new cc.Rect(0, 0, winSize.width, winSize.height + 10);
 
             // score
             this.lbScore = cc.LabelTTF.create("Score: 0", cc.SizeMake(winSize.width / 2, 50), cc.TEXT_ALIGNMENT_RIGHT, "Arial", 14);
@@ -48,13 +48,10 @@ var GameLayer = function(){
 
             // ship
             this._ship = new Ship();
-            this._layer.addChild(this._ship, this._ship.zOrder, global.Tag.Ship);
+            this._layer.addChild(this._ship.model, this._ship.zOrder, global.Tag.Ship);
 
             // accept touch now!
             this._layer.setIsTouchEnabled(true);
-
-            //accept keypad
-            this._layer.setIsKeypadEnabled(true);
 
             // schedule
             cc.Scheduler.sharedScheduler().scheduleSelector(this.update, this, 0, false);
@@ -87,100 +84,139 @@ var GameLayer = function(){
     };
     this._layer.ccTouchesMoved = function (touches, event) {
         if (this.isMouseDown) {
-            var curPos = this._ship.getPosition();
-            if(cc.Rect.CCRectIntersectsRect(this._ship.boundingBox(),this.screenRect)){
-                var touch = touches[0];
-                var location = touch.locationInView(touch.view());
+            var ship = this.getChildByTag(global.Tag.Ship);
+            if (ship) {
+                var curPos = ship.getPosition();
+                if (cc.Rect.CCRectIntersectsRect(ship.boundingBox(), screenRect)) {
+                    var touch = touches[0];
+                    var location = touch.locationInView(touch.view());
 
-                var move = cc.ccpSub(location,this._beginPos);
-                var nextPos = cc.ccpAdd(curPos,move);
-                this._ship.setPosition(nextPos);
-                this._beginPos = location;
-                curPos = nextPos;
+                    var move = cc.ccpSub(location, this._beginPos);
+                    var nextPos = cc.ccpAdd(curPos, move);
+                    ship.setPosition(nextPos);
+                    this._beginPos = location;
+                    curPos = nextPos;
+                }
             }
         }
     };
     this._layer.ccTouchesEnded = function () {
         this.isMouseDown = false;
     };
-    this._layer.keyDown = function (e) {
-        keys[e] = true;
-    };
-    this._layer.keyUp = function (e) {
-        keys[e] = false;
-    };
     this.update = function (dt) {
-        this.checkIsCollide();
+        this.checkIsCollide(dt);
         this.removeInactiveUnit(dt);
         this.checkIsReborn();
         this.updateUI();
         cc.$("#cou").innerHTML = "Ship:" + 1 + ", Enemy: " + global.enemyContainer.length
             + ", Bullet:" + global.ebulletContainer.length + "," + global.sbulletContainer.length + " all:" + this._layer.getChildren().length;
     };
-    this.checkIsCollide = function () {
+    this.checkIsCollide = function (dt) {
         var selChild, bulletChild;
         //check collide
-        for(var i = 0; i < global.enemyContainer.length;i++){
+        for (var i = 0; i < global.enemyContainer.length; i++) {
             selChild = global.enemyContainer[i];
-            for(var j = 0; j < global.sbulletContainer.length; j++) {
+            for (var j = 0; j < global.sbulletContainer.length; j++) {
                 bulletChild = global.sbulletContainer[j];
                 if (this.collide(selChild, bulletChild)) {
                     bulletChild.hurt();
                     selChild.hurt();
                 }
-                if (!cc.Rect.CCRectIntersectsRect(this.screenRect, bulletChild.bullet.boundingBoxToWorld())) {
-                        bulletChild.destroy();
+                if (!cc.Rect.CCRectIntersectsRect(screenRect, bulletChild.model.boundingBoxToWorld())) {
+                    bulletChild.destroy();
                 }
             }
-            if (this.collide(selChild, this._ship)) {
-                if (this._ship.active) {
-                    selChild.hurt();
-                    this._ship.hurt();
-                }
-            }
-            if (!cc.Rect.CCRectIntersectsRect(this.screenRect, selChild.boundingBoxToWorld())) {
-                    selChild.destroy();
-            }
-        }
-
-        for(var i = 0; i < global.ebulletContainer.length;i++){
-            selChild = global.ebulletContainer[i];
-            if (this.collide(selChild, this._ship)) {
-                if (this._ship.active) {
-                    selChild.hurt();
-                    this._ship.hurt();
-                }
-            }
-            if (!cc.Rect.CCRectIntersectsRect(this.screenRect, selChild.boundingBoxToWorld())) {
-                    //selChild.destroy();
-            }
-        }
-    };
-    this.removeInactiveUnit = function (dt) {
-        var selChild, layerChildren = this._layer.getChildren();
-        for (var i in layerChildren) {
-            selChild = layerChildren[i];
-            if (selChild) {
-                selChild.update(dt);
-                if ((selChild.getTag() == global.Tag.Ship) || (selChild.getTag() == global.Tag.ShipBullet) ||
-                    (selChild.getTag() == global.Tag.Enemy) || (selChild.getTag() == global.Tag.EnemyBullet)) {
-                    if (selChild && !selChild.active) {
-                        //selChild.destroy();
+            if (this._ship) {
+                if (this.collide(selChild, this._ship)) {
+                    if (this._ship.active) {
+                        selChild.hurt();
+                        this._ship.hurt();
                     }
                 }
             }
+            if (!cc.Rect.CCRectIntersectsRect(screenRect, selChild.model.boundingBoxToWorld())) {
+                selChild.destroy();
+            }
         }
+
+        for (var i = 0; i < global.ebulletContainer.length; i++) {
+            selChild = global.ebulletContainer[i];
+            if (this._ship) {
+                if (this.collide(selChild, this._ship)) {
+                    if (this._ship.active) {
+                        selChild.hurt();
+                        this._ship.hurt();
+                    }
+                }
+            }
+            if (!cc.Rect.CCRectIntersectsRect(screenRect, selChild.model.boundingBoxToWorld())) {
+                selChild.destroy();
+            }
+
+        }
+    };
+    this.removeInactiveUnit = function (dt) {
+        for (var i = 0; i < global.enemyContainer.length; i++) {
+            var selChild = global.enemyContainer[i];
+            if (selChild) {
+                selChild.update(dt);
+                if (selChild && !selChild.active) {
+                    selChild.destroy();
+                }
+            }
+        }
+        for (var i = 0; i < global.sbulletContainer.length; i++) {
+            var selChild = global.sbulletContainer[i];
+            if (selChild) {
+                selChild.update(dt);
+                if (selChild && !selChild.active) {
+                    selChild.destroy();
+                }
+            }
+        }
+
+        for (var i = 0; i < global.ebulletContainer.length; i++) {
+            var selChild = global.ebulletContainer[i];
+            if (selChild) {
+                selChild.update(dt);
+                if (selChild && !selChild.active) {
+                    selChild.destroy();
+                }
+            }
+        }
+        if (this._ship) {
+            this._ship.update(dt);
+            if (this._ship && !this._ship.active) {
+                this._ship.destroy();
+            }
+        }
+        /*var selChild, layerChildren = this._layer.getChildren();
+         for (var i in layerChildren) {
+         selChild = layerChildren[i];
+         if (selChild) {
+         selChild.update(dt);
+         if ((selChild.getTag() == global.Tag.Ship) || (selChild.getTag() == global.Tag.ShipBullet) ||
+         (selChild.getTag() == global.Tag.Enemy) || (selChild.getTag() == global.Tag.EnemyBullet)) {
+         if (selChild && !selChild.active) {
+         selChild.destroy();
+         }
+         }
+         }
+         }*/
+
     };
     this.checkIsReborn = function () {
         if (global.life > 0 && !this._ship.active) {
             // ship
             this._ship = new Ship();
-            this._layer.addChild(this._ship, this._ship.zOrder, global.Tag.Ship);
+            this._layer.addChild(this._ship.model, this._ship.zOrder, global.Tag.Ship);
         }
-        else if (global.life <= 0 && !this._ship.active) {
-            this._layer.runAction(cc.Sequence.create(
-                cc.DelayTime.create(3),
-                cc.CallFunc.create(this, this.onGameOver)))
+        else if (global.life <= 0 && this._ship) {
+            if (!this._ship.active) {
+                this._layer.runAction(cc.Sequence.create(
+                    cc.DelayTime.create(3),
+                    cc.CallFunc.create(this, this.onGameOver)))
+            }
         }
     };
     this.updateUI = function () {
@@ -196,8 +232,8 @@ var GameLayer = function(){
             var selChild = layerChildren[i];
             if ((selChild.getTag() == global.Tag.Enemy) || (selChild.getTag() == global.Tag.EnemyBullet) || (selChild.getTag() == global.Tag.ShipBullet)) {
                 var childRect = selChild.boundingBoxToWorld();
-                if (!cc.Rect.CCRectIntersectsRect(this.screenRect, childRect)) {
-                    //selChild.destroy();
+                if (!cc.Rect.CCRectIntersectsRect(screenRect, childRect)) {
+                    selChild.destroy();
                 }
             }
         }
@@ -273,7 +309,8 @@ var GameLayer = function(){
         var scene = cc.Scene.create();
         scene.addChild(GameOver.create());
         cc.Director.sharedDirector().replaceScene(cc.TransitionFade.create(1.2, scene));
-        this._layer.getParent().removeChild(this);
+        this._layer.getParent().removeChild(this._layer);
+        cc.Scheduler.sharedScheduler().unscheduleAllSelectorsForTarget(this);
     }
 };
 

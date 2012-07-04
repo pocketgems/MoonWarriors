@@ -1,23 +1,27 @@
-var Ship = cc.Sprite.extend({
-    speed:220,
-    bulletSpeed:900,
-    HP:10,
-    bulletTypeValue:1,
-    bulletPowerValue:1,
-    throwBombing:false,
-    canBeAttack:true,
-    isThrowingBomb:false,
-    zOrder:3000,
-    maxBulletPowerValue:4,
-    appearPosition:cc.ccp(160, 60),
-    _hurtColorLife:0,
-    active:true,
-    ctor:function () {
+var Ship = function () {
+    var selfPointer = this;
+    this.model = null;
+    this._timeTick = 0;
+    this.speed = 220;
+    this.bulletSpeed = 900;
+    this.HP = 10;
+    this.bulletTypeValue = 1;
+    this.bulletPowerValue = 1;
+    this.throwBombing = false;
+    this.canBeAttack = true;
+    this.isThrowingBomb = false;
+    this.zOrder = 3000;
+    this.maxBulletPowerValue = 4;
+    this.appearPosition = cc.ccp(160, 60);
+    this._hurtColorLife = 0;
+    this.active = true;
+    this.ctor = function () {
         //init life
         var shipTexture = cc.TextureCache.sharedTextureCache().addImage(s_ship01);
-        this.initWithTexture(shipTexture, cc.RectMake(0, 0, 60, 38));
-        this.setTag(this.zOrder);
-        this.setPosition(this.appearPosition);
+        this.model = cc.Sprite.createWithTexture(shipTexture, cc.RectMake(0, 0, 60, 38));
+        //this.model.initWithTexture(shipTexture, cc.RectMake(0, 0, 60, 38));
+        this.model.setTag(this.zOrder);
+        this.model.setPosition(this.appearPosition);
 
         // set frame
         var animation = cc.Animation.create();
@@ -26,41 +30,26 @@ var Ship = cc.Sprite.extend({
 
         // ship animate
         var action = cc.Animate.create(0.1, animation, true);
-        this.runAction(cc.RepeatForever.create(action));
-        this.schedule(this.shoot, 1 / 6);
+        this.model.runAction(cc.RepeatForever.create(action));
+        cc.Scheduler.sharedScheduler().scheduleSelector(this.shoot, this, 1 / 6, false);
 
         //revive effect
         this.canBeAttack = false;
-        var ghostSprite = new additiveSprite();
-        ghostSprite.initWithTexture(shipTexture, cc.RectMake(0, 45, 60, 38));
+        var ghostSprite = new cc.Sprite.createWithTexture(shipTexture, cc.RectMake(0, 45, 60, 38));
+        this.model.setBlendFunc(new cc.BlendFunc(cc.GL_SRC_ALPHA, cc.GL_ONE));
         ghostSprite.setScale(8);
-        ghostSprite.setPosition(cc.ccp(this.getContentSize().width / 2, 12));
-        this.addChild(ghostSprite, 3000, 99999);
+        ghostSprite.setPosition(cc.ccp(this.model.getContentSize().width / 2, 12));
+        this.model.addChild(ghostSprite, 3000, 99999);
         ghostSprite.runAction(cc.ScaleTo.create(0.5, 1, 1));
         var blinks = cc.Blink.create(3, 9);
         var makeBeAttack = cc.CallFunc.create(this, function (t) {
-            t.canBeAttack = true;
-            t.setIsVisible(true);
-            t.removeChild(ghostSprite);
+            selfPointer.canBeAttack = true;
+            selfPointer.model.setIsVisible(true);
+            selfPointer.model.removeChild(ghostSprite);
         });
-        this.runAction(cc.Sequence.create(cc.DelayTime.create(0.5), blinks, makeBeAttack));
-    },
-    update:function (dt) {
-        var newX = this.getPosition().x, newY = this.getPosition().y;
-        if ((keys[cc.KEY.w] || keys[cc.KEY.up]) && this.getPosition().y <= winSize.height) {
-            newY += dt * this.speed;
-        }
-        if ((keys[cc.KEY.s] || keys[cc.KEY.down]) && this.getPosition().y >= 0) {
-            newY -= dt * this.speed;
-        }
-        if ((keys[cc.KEY.a] || keys[cc.KEY.left]) && this.getPosition().x >= 0) {
-            newX -= dt * this.speed;
-        }
-        if ((keys[cc.KEY.d] || keys[cc.KEY.right]) && this.getPosition().x <= winSize.width) {
-            newX += dt * this.speed;
-        }
-        this.setPosition(cc.ccp(newX, newY));
-
+        this.model.runAction(cc.Sequence.create(cc.DelayTime.create(0.5), blinks, makeBeAttack));
+    };
+    this.update = function (dt) {
         if (this.HP <= 0) {
             this.active = false;
         }
@@ -71,41 +60,47 @@ var Ship = cc.Sprite.extend({
                 this._hurtColorLife--;
             }
             if (this._hurtColorLife == 1) {
-                this.setColor(new cc.Color3B(255, 255, 255));
+                this.model.setColor(new cc.Color3B(255, 255, 255));
             }
         }
-    },
-    shoot:function (dt) {
-        //this.shootEffect();
-        var offset = 13;
-        var a = new Bullet(this.bulletSpeed, "W1.png", global.AttackMode.Normal);
-        global.sbulletContainer.push(a);
-        this.getParent().addChild(a.bullet, a.zOrder, global.Tag.ShipBullet);
-        a.bullet.setPosition(cc.ccp(this.getPosition().x + offset, this.getPosition().y + 3 + this.getContentSize().height * 0.3));
+    };
+    this.shoot = function (dt) {
+        if (this.model.getParent()) {
+            var offset = 13;
+            var a = new Bullet(this.bulletSpeed, "W1.png", global.AttackMode.Normal);
+            global.sbulletContainer.push(a);
+            this.model.getParent().addChild(a.model, a.zOrder, global.Tag.ShipBullet);
+            a.model.setPosition(cc.ccp(this.model.getPosition().x + offset, this.model.getPosition().y + 3 + this.model.getContentSize().height * 0.3));
 
-        var b = new Bullet(this.bulletSpeed, "W1.png", global.AttackMode.Normal);
-        global.sbulletContainer.push(b);
-        this.getParent().addChild(b.bullet, b.zOrder, global.Tag.ShipBullet);
-        b.bullet.setPosition(cc.ccp(this.getPosition().x - offset, this.getPosition().y + 3 + this.getContentSize().height * 0.3));
-    },
-    destroy:function () {
-        global.life--;
-        this.getParent().addChild(new Explosion(this.getPosition().x, this.getPosition().y));
-        this.getParent().removeChild(this);
+            var b = new Bullet(this.bulletSpeed, "W1.png", global.AttackMode.Normal);
+            global.sbulletContainer.push(b);
+            this.model.getParent().addChild(b.model, b.zOrder, global.Tag.ShipBullet);
+            b.model.setPosition(cc.ccp(this.model.getPosition().x - offset, this.model.getPosition().y + 3 + this.model.getContentSize().height * 0.3));
+        }
+    };
+    this.destroy = function () {
+        (global.life > 0) ? global.life-- : 0;
+        if (this.model.getParent()) {
+            var exp = new Explosion(this.model.getPosition().x, this.model.getPosition().y);
+            this.model.getParent().addChild(exp.model);
+            this.model.getParent().removeChild(this.model);
+        }
         if (global.sound) {
             cc.AudioManager.sharedEngine().playEffect(s_shipDestroyEffect);
         }
-    },
-    hurt:function () {
+        cc.Scheduler.sharedScheduler().unscheduleAllSelectorsForTarget(this);
+    };
+    this.hurt = function () {
         if (this.canBeAttack) {
             this._hurtColorLife = 2;
-            this.HP--;
-            this.setColor(cc.RED());
+            selfPointer.HP--;
+            this.model.setColor(cc.RED());
         }
-    },
-    collideRect:function(){
-        var a = this.getContentSize();
-        var r = new cc.RectMake(this.getPositionX() - a.width/2,this.getPositionY() - a.height/2,a.width,a.height/2);
+    };
+    this.collideRect = function () {
+        var a = this.model.getContentSize();
+        var r = new cc.RectMake(this.model.getPositionX() - a.width / 2, this.model.getPositionY() - a.height / 2, a.width, a.height / 2);
         return r;
-    }
-});
+    };
+    this.ctor();
+};

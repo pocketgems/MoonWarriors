@@ -1,6 +1,6 @@
 var SysMenu = function () {
     this._ship = null;
-    this._layer = new cc.Layer();
+    this._layer = cc.Layer.create();
     this.init = function () {
         var bRet = false;
         if (this._layer.init()) {

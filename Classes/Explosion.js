@@ -1,23 +1,26 @@
-var Explosion = additiveSprite.extend({
-    tmpWidth:0,
-    tmpHeight:0,
-    ctor:function () {
-        this._super();
-        this.tmpWidth = this.getContentSize().width;
-        this.tmpHeight = this.getContentSize().height;
+var Explosion = function () {
+    this.model = null;
+    this.tmpWidth = 0;
+    this.tmpHeight = 0;
+    this.ctor = function () {
         var pFrame = cc.SpriteFrameCache.sharedSpriteFrameCache().spriteFrameByName("explosion_01.png");
-        this.initWithSpriteFrame(pFrame);
+        this.model = cc.Sprite.createWithSpriteFrame(pFrame);
+        this.tmpWidth = this.model.getContentSize().width;
+        this.tmpHeight = this.model.getContentSize().height;
+        this.model.setBlendFunc(new cc.BlendFunc(cc.GL_SRC_ALPHA,cc.GL_ONE));
 
         var animation = cc.AnimationCache.sharedAnimationCache().animationByName("Explosion");
-        this.runAction(cc.Sequence.create(
+        this.model.runAction(cc.Sequence.create(
             cc.Animate.create(animation, false),
             cc.CallFunc.create(this, this.destroy)
         ));
-    },
-    destroy:function () {
-        this.getParent().removeChild(this);
+    };
+    this.destroy = function () {
+        this.model.getParent().removeChild(this.model);
     }
-});
+
+    this.ctor();
+};
 
 Explosion.sharedExplosion = function () {
     cc.SpriteFrameCache.sharedSpriteFrameCache().addSpriteFramesWithFile(s_explosion_plist);
