@@ -17,6 +17,7 @@ var Explosion = function () {
     };
     this.destroy = function () {
         this.model.getParent().removeChild(this.model);
+        cc.Scheduler.sharedScheduler().unscheduleAllSelectorsForTarget(this);
     }
 
     this.ctor();
