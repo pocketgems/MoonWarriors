@@ -29,7 +29,7 @@ var flareEffect = function (parent, target, callback) {
 
 var removeFromParent = function( sprite )
 {
-    sprite.removeFromParentAndCleanup( true );
+    sprite.removeFromParent();
 };
 
 var spark = function (ccpoint, parent, scale, duration) {

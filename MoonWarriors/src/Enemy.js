@@ -46,7 +46,7 @@ var Enemy = cc.Sprite.extend({
         this.getParent().addChild(a);
         spark(this.getPosition(),this.getParent(), 1.2, 0.7);
         cc.ArrayRemoveObject(MW.CONTAINER.ENEMIES,this);
-        this.removeFromParentAndCleanup(true);
+        this.removeFromParent();
         if(MW.SOUND){
             cc.AudioEngine.getInstance().playEffect(s_explodeEffect);
         }
