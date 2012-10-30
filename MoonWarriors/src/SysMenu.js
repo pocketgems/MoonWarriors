@@ -31,12 +31,12 @@ var SysMenu = cc.Layer.extend({
             var aboutSelected = cc.Sprite.create(s_menu, cc.rect(252, 33, 126, 33));
             var aboutDisabled = cc.Sprite.create(s_menu, cc.rect(252, 33 * 2, 126, 33));
 
-            var newGame = cc.MenuItemSprite.create(newGameNormal, newGameSelected, newGameDisabled, this, function () {
+            var newGame = cc.MenuItemSprite.create(newGameNormal, newGameSelected, newGameDisabled, function () {
                 this.onButtonEffect();
                 flareEffect(this, this, this.onNewGame);
-            });
-            var gameSettings = cc.MenuItemSprite.create(gameSettingsNormal, gameSettingsSelected, gameSettingsDisabled, this, this.onSettings);
-            var about = cc.MenuItemSprite.create(aboutNormal, aboutSelected, aboutDisabled, this, this.onAbout);
+            }.bind(this));
+            var gameSettings = cc.MenuItemSprite.create(gameSettingsNormal, gameSettingsSelected, gameSettingsDisabled, this.onSettings, this);
+            var about = cc.MenuItemSprite.create(aboutNormal, aboutSelected, aboutDisabled, this.onAbout, this);
 
             var menu = cc.Menu.create(newGame, gameSettings, about);
             menu.alignItemsVerticallyWithPadding(10);

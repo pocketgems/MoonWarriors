@@ -46,11 +46,11 @@ var Ship = cc.Sprite.extend({
         this.addChild(ghostSprite, 3000, 99999);
         ghostSprite.runAction(cc.ScaleTo.create(0.5, 1, 1));
         var blinks = cc.Blink.create(3, 9);
-        var makeBeAttack = cc.CallFunc.create(this, function (t) {
+        var makeBeAttack = cc.CallFunc.create(function (t) {
             t.canBeAttack = true;
             t.setVisible(true);
             t.removeChild(ghostSprite,true);
-        });
+        }.bind(this));
         this.runAction(cc.Sequence.create(cc.DelayTime.create(0.5), blinks, makeBeAttack));
     },
     update:function (dt) {

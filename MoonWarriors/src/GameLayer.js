@@ -215,7 +215,7 @@ var GameLayer = cc.Layer.extend({
             this._ship = null;
             this.runAction(cc.Sequence.create(
                 cc.DelayTime.create(0.2),
-                cc.CallFunc.create(this, this.onGameOver)));
+                cc.CallFunc.create(this.onGameOver, this)));
         }
     },
     updateUI:function () {

@@ -17,10 +17,10 @@ var flareEffect = function (parent, target, callback) {
     var rotateEase = cc.EaseExponentialOut.create(rotateAnim);
     var bigger = cc.ScaleTo.create(0.5, 1);
 
-    var onComplete = cc.CallFunc.create(target, callback);
-    var killflare = cc.CallFunc.create(flare, function () {
+    var onComplete = cc.CallFunc.create(callback, target);
+    var killflare = cc.CallFunc.create(function () {
         this.getParent().removeChild(this,true);
-    });
+    }, flare);
     flare.runAction(cc.Sequence.create(opacityAnim, biggerEase, opacDim, killflare, onComplete));
     flare.runAction(easeMove);
     flare.runAction(rotateEase);
@@ -61,7 +61,7 @@ var spark = function (ccpoint, parent, scale, duration) {
     var right = cc.RotateBy.create(duration, 45);
     var scaleBy = cc.ScaleBy.create(duration, 3, 3);
     var fadeOut = cc.FadeOut.create(duration);
-    var remove = cc.CallFunc.create(this, removeFromParent );
+    var remove = cc.CallFunc.create(removeFromParent, this);
     var seq = cc.Sequence.create( fadeOut, remove );
 
     one.runAction(left);
