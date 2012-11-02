@@ -23,7 +23,7 @@ var AboutLayer = cc.Layer.extend({
             var label = cc.LabelTTF.create("Go back", "Arial", 14);
             var back = cc.MenuItemLabel.create(label, this.onBackCallback);
             var menu = cc.Menu.create(back);
-            menu.setPosition(cc.p(winSize.width / 2, 40));
+            menu.setPosition( winSize.width / 2, 40);
             this.addChild(menu);
             bRet = true;
         }

@@ -11,7 +11,7 @@ var SettingsLayer = cc.Layer.extend({
 
             var cacheImage = cc.TextureCache.getInstance().addImage(s_menuTitle);
             var title = cc.Sprite.createWithTexture(cacheImage, cc.rect(0, 0, 134, 34));
-            title.setPosition(cc.p(winSize.width / 2, winSize.height - 120));
+            title.setPosition(winSize.width / 2, winSize.height - 120);
             this.addChild(title);
 
 
@@ -69,7 +69,7 @@ var SettingsLayer = cc.Layer.extend({
     onSoundControl:function(){
         MW.SOUND = MW.SOUND ? false : true;
         if(!MW.SOUND){
-            cc.AudioEngine.getInstance().stopBackgroundMusic();
+            cc.AudioEngine.getInstance().stopMusic();
         }
     },
     onModeControl:function(){

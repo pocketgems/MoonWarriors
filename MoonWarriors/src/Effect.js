@@ -3,7 +3,7 @@ var flareEffect = function (parent, target, callback) {
     flare.setBlendFunc(gl.SRC_ALPHA, gl.ONE);
     parent.addChild(flare, 10);
     flare.setOpacity(0);
-    flare.setPosition(cc.p(-30, 297));
+    flare.setPosition(-30, 297);
     flare.setRotation(-120);
     flare.setScale(0.2);
 
