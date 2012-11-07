@@ -56,7 +56,7 @@ var Ship = cc.Sprite.extend({
     update:function (dt) {
 
         // Keys are only enabled on the browser
-        if( cc.config.deviceType == 'browser' ) {
+        if( cc.config.platform == 'browser' ) {
             var pos = this.getPosition();
             if ((MW.KEYS[cc.KEY.w] || MW.KEYS[cc.KEY.up]) && pos.y <= winSize.height) {
                 pos.y += dt * this.speed;
