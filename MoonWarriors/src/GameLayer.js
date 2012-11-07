@@ -64,7 +64,7 @@ var GameLayer = cc.Layer.extend({
             // ship Life count
             this._lbLife = cc.LabelTTF.create("0", "Arial", 20);
             this._lbLife.setPosition(60, 463);
-            this._lbLife.setColor(cc.RED);
+            this._lbLife.setColor(cc.c3b(255,0,0));
             this.addChild(this._lbLife, 1000);
 
             // ship
@@ -222,7 +222,7 @@ var GameLayer = cc.Layer.extend({
         if (this._tmpScore < MW.SCORE) {
             this._tmpScore += 5;
         }
-        this._lbLife.setString(MW.LIFE);
+        this._lbLife.setString(MW.LIFE + '');
         this.lbScore.setString("Score: " + this._tmpScore);
     },
     collide:function (a, b) {
